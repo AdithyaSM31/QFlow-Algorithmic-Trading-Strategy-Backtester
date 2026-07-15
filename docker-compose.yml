@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./backend
+    container_name: qflow-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  worker-fast:
+    build: ./backend
+    container_name: qflow-worker-fast
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    command: >
+      celery -A app.workers.celery_app worker
+      -Q fast
+      --concurrency=2
+      --max-tasks-per-child=5
+      -l info
+      -n fast_worker@%h
+
+  worker-slow:
+    build: ./backend
+    container_name: qflow-worker-slow
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+    command: >
+      celery -A app.workers.celery_app worker
+      -Q slow
+      --concurrency=1
+      --max-tasks-per-child=3
+      --max-memory-per-child=2000000
+      -l info
+      -n slow_worker@%h
+
+  flower:
+    build: ./backend
+    container_name: qflow-flower
+    depends_on:
+      - redis
+    env_file: ./backend/.env
+    ports:
+      - "5555:5555"
+    command: celery -A app.workers.celery_app flower --port=5555
+
+  frontend:
+    build: ./frontend
+    container_name: qflow-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: qflow-timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: qflow
+      POSTGRES_USER: qflow
+      POSTGRES_PASSWORD: qflow_dev_2026
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qflow -d qflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: qflow-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  timescale_data:
+  redis_data:
