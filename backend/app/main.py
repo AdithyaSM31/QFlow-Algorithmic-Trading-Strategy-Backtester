@@ -42,6 +42,28 @@ def create_app() -> FastAPI:
     async def health_check():
         return {"status": "healthy", "app": settings.APP_NAME}
 
+    @application.get("/api/v1/setup-db", tags=["Debug"])
+    async def setup_db_endpoint():
+        import os
+        import psycopg2
+        from pathlib import Path
+        db_url = os.getenv("DATABASE_URL_SYNC", settings.DATABASE_URL_SYNC)
+        try:
+            conn = psycopg2.connect(db_url)
+            conn.autocommit = True
+            cursor = conn.cursor()
+            
+            sql_file = Path(__file__).parent.parent / "scripts" / "init_db.sql"
+            with open(sql_file, "r") as f:
+                sql = f.read()
+                
+            cursor.execute(sql)
+            cursor.close()
+            conn.close()
+            return {"status": "success", "msg": "Database initialized."}
+        except Exception as e:
+            return {"status": "error", "msg": str(e), "db_url_starts_with": db_url[:15] if db_url else None}
+
     @application.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
         origin = request.headers.get("origin")
