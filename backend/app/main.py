@@ -27,7 +27,7 @@ def create_app() -> FastAPI:
     # CORS — allow frontend origin
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://localhost:5173"],
+        allow_origins=["http://localhost:3000", "http://localhost:5173", "https://q-flow-neon.vercel.app"],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
