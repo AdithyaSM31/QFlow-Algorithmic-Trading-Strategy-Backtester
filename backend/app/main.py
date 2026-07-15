@@ -28,7 +28,14 @@ def create_app() -> FastAPI:
     # CORS — allow frontend origin
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://localhost:5173", "https://q-flow-neon.vercel.app"],
+        allow_origins=[
+            "http://localhost:3000", 
+            "http://localhost:5173", 
+            "https://q-flow-neon.vercel.app",
+            "http://localhost",
+            "https://localhost",
+            "capacitor://localhost"
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -68,7 +75,14 @@ def create_app() -> FastAPI:
     async def global_exception_handler(request: Request, exc: Exception):
         origin = request.headers.get("origin")
         headers = {}
-        if origin in ["http://localhost:3000", "http://localhost:5173", "https://q-flow-neon.vercel.app"]:
+        if origin in [
+            "http://localhost:3000", 
+            "http://localhost:5173", 
+            "https://q-flow-neon.vercel.app",
+            "http://localhost",
+            "https://localhost",
+            "capacitor://localhost"
+        ]:
             headers["Access-Control-Allow-Origin"] = origin
             headers["Access-Control-Allow-Credentials"] = "true"
         
