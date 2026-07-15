@@ -9,8 +9,9 @@ services:
     name: qflow-api
     env: docker
     dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     plan: free
-    healthCheckPath: /health
+    healthCheckPath: /api/v1/health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -29,22 +30,6 @@ services:
       # We need to ensure we use the correct driver for async.
       # The app config should dynamically replace postgres:// with postgresql+asyncpg:// 
 
-  - type: worker
-    name: qflow-worker
-    env: docker
-    dockerfilePath: backend/Dockerfile
-    dockerCommand: celery -A app.workers.celery_app worker -Q fast,slow --concurrency=1 -l info
-    plan: free
-    envVars:
-      - key: DATABASE_URL_SYNC
-        fromDatabase:
-          name: qflow-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: qflow-redis
-          property: connectionString
 
   - type: redis
     name: qflow-redis
