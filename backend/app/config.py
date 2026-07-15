@@ -4,6 +4,7 @@ Loads from environment variables / .env file.
 """
 
 from pydantic_settings import BaseSettings
+from pydantic import model_validator
 from functools import lru_cache
 
 
@@ -38,6 +39,14 @@ class Settings(BaseSettings):
         elif url.startswith("postgresql://"):
             return url.replace("postgresql://", "postgresql+asyncpg://", 1)
         return url
+
+    @model_validator(mode="after")
+    def set_celery_urls(self):
+        if self.CELERY_BROKER_URL == "redis://localhost:6379/0" and self.REDIS_URL != "redis://localhost:6379/0":
+            self.CELERY_BROKER_URL = self.REDIS_URL
+        if self.CELERY_RESULT_BACKEND == "redis://localhost:6379/1" and self.REDIS_URL != "redis://localhost:6379/0":
+            self.CELERY_RESULT_BACKEND = self.REDIS_URL
+        return self
 
 @lru_cache()
 def get_settings() -> Settings:
