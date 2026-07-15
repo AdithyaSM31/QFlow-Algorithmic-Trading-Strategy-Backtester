@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Initialize the database schema if needed
+python scripts/setup_db.py
+
 # Start Celery worker in the background
 celery -A app.workers.celery_app worker -Q fast,slow --concurrency=1 -l info &
 
