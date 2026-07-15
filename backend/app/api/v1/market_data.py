@@ -27,6 +27,31 @@ async def list_symbols(db: AsyncSession = Depends(get_db)):
     return [SymbolInfo(**row) for row in rows]
 
 
+@router.post("/ingest", status_code=202)
+async def trigger_ingestion(
+    background_tasks: BackgroundTasks,
+):
+    """Trigger background market data ingestion."""
+    def run_ingest():
+        import os
+        from sqlalchemy import create_engine
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__), "../../../"))
+        from scripts.ingest_data import ingest_symbol, DEFAULT_SYMBOLS
+        from app.config import get_settings
+        
+        settings = get_settings()
+        engine = create_engine(settings.DATABASE_URL_SYNC)
+        for sym in DEFAULT_SYMBOLS:
+            try:
+                ingest_symbol(engine, sym, "5y")
+            except Exception as e:
+                print(f"Failed to ingest {sym}: {e}")
+
+    background_tasks.add_task(run_ingest)
+    return {"status": "Ingestion started in background"}
+
+
 @router.get("/{symbol}", response_model=list[OHLCVBar])
 async def get_market_data(
     symbol: str,
@@ -60,28 +85,3 @@ async def get_market_data(
         raise HTTPException(status_code=404, detail=f"No data found for {symbol}")
 
     return [OHLCVBar(**row) for row in rows]
-
-
-@router.post("/ingest", status_code=202)
-async def trigger_ingestion(
-    background_tasks: BackgroundTasks,
-):
-    """Trigger background market data ingestion."""
-    def run_ingest():
-        import os
-        from sqlalchemy import create_engine
-        import sys
-        sys.path.append(os.path.join(os.path.dirname(__file__), "../../../"))
-        from scripts.ingest_data import ingest_symbol, DEFAULT_SYMBOLS
-        from app.config import get_settings
-        
-        settings = get_settings()
-        engine = create_engine(settings.DATABASE_URL_SYNC)
-        for sym in DEFAULT_SYMBOLS:
-            try:
-                ingest_symbol(engine, sym, "5y")
-            except Exception as e:
-                print(f"Failed to ingest {sym}: {e}")
-
-    background_tasks.add_task(run_ingest)
-    return {"status": "Ingestion started in background"}
