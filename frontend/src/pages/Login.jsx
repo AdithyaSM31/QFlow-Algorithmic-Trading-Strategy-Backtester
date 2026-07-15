@@ -33,10 +33,10 @@ export default function Login({ onLogin }) {
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: '24px', position: 'relative', zIndex: 1
     }}>
-      <div className="flex items-center gap-6" style={{ maxWidth: '1000px', width: '100%', justifyContent: 'space-between' }}>
+      <div className="auth-container animate-fade-in">
         
         {/* Left Side: Hero Typgraphy */}
-        <div className="animate-slide-in" style={{ flex: 1, paddingRight: '40px' }}>
+        <div className="auth-hero animate-slide-in">
           <h1 className="heading-hero text-glow" style={{ marginBottom: '16px' }}>
             THE MOST<br/>
             INTELLIGENT WAY TO<br/>
@@ -50,7 +50,7 @@ export default function Login({ onLogin }) {
         </div>
 
         {/* Right Side: Form Card */}
-        <div className="animate-fade-in" style={{ width: '420px', flexShrink: 0 }}>
+        <div className="auth-card animate-fade-in">
           <div className="glass-panel" style={{ padding: '40px' }}>
             
             {/* Logo */}

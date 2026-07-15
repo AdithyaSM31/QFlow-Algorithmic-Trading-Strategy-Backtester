@@ -150,6 +150,10 @@ a:hover { color: #60a5fa; }
   display: flex;
   min-height: 100vh;
   padding: 24px;
+  padding-top: calc(env(safe-area-inset-top) + 24px);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px);
+  padding-left: calc(env(safe-area-inset-left) + 24px);
+  padding-right: calc(env(safe-area-inset-right) + 24px);
   gap: 24px;
 }
 
@@ -299,6 +303,11 @@ tr:hover td { background: var(--bg-glass); }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 .w-full { width: 100%; }
 
+/* --- Auth Layout --- */
+.auth-container { display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1000px; width: 100%; }
+.auth-card { width: 420px; flex-shrink: 0; }
+.auth-hero { flex: 1; padding-right: 40px; }
+
 /* ============================================================
    RESPONSIVE DESIGN
    ============================================================ */
@@ -320,13 +329,18 @@ tr:hover td { background: var(--bg-glass); }
 
 /* Mobile Devices */
 @media (max-width: 768px) {
-  .app-layout { padding: 12px; padding-bottom: 90px; } /* Leave space for bottom nav */
+  .app-layout { 
+    padding: 12px; 
+    padding-top: calc(env(safe-area-inset-top) + 12px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 90px); /* Leave space for bottom nav */
+  }
   .main-content { padding: 16px; }
   
   /* Bottom Navigation */
   .sidebar {
     position: fixed; top: auto; bottom: 0; left: 0; right: 0;
-    width: 100%; height: 70px; padding: 0; border-radius: 0;
+    width: 100%; height: calc(70px + env(safe-area-inset-bottom)); 
+    padding: 0 0 env(safe-area-inset-bottom) 0; border-radius: 0;
     border-top: 1px solid var(--border-glass);
     border-bottom: none; border-left: none; border-right: none;
     background: rgba(10, 10, 10, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -346,6 +360,11 @@ tr:hover td { background: var(--bg-glass); }
 
   /* Stack Grids */
   .grid-2, .grid-3, .metrics-grid { grid-template-columns: 1fr; gap: 16px; }
+  
+  /* Auth Layout Stacking */
+  .auth-container { flex-direction: column; text-align: center; justify-content: center; gap: 32px; padding-top: 40px; }
+  .auth-hero { padding-right: 0; }
+  .auth-card { width: 100%; }
   
   /* Component adjustments */
   .page-header h2 { font-size: 24px; }
