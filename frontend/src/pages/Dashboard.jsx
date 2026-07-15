@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBacktests, getStrategies } from '../api';
+import { getBacktests, getStrategies, getWsUrl } from '../api';
 import { Activity, TrendingUp, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 const STATUS_BADGE = {
@@ -30,7 +30,7 @@ export default function Dashboard() {
 
     fetchData();
 
-    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/progress');
+    const ws = new WebSocket(getWsUrl());
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);

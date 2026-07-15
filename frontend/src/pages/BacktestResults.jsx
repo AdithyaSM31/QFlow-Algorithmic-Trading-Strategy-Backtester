@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getBacktest, getEquityCurve, getTrades } from '../api';
+import { getBacktest, getEquityCurve, getTrades, getWsUrl } from '../api';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
@@ -27,7 +27,7 @@ export default function BacktestResults() {
   useEffect(() => {
     loadData();
     
-    const ws = new WebSocket('ws://localhost:8000/api/v1/ws/progress');
+    const ws = new WebSocket(getWsUrl());
     ws.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);

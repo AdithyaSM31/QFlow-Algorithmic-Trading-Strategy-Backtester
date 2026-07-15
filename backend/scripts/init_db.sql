@@ -4,8 +4,16 @@
 -- for high-performance time-series financial data storage.
 -- ============================================================
 
--- Enable TimescaleDB extension
-CREATE EXTENSION IF NOT EXISTS timescaledb;
+-- Enable TimescaleDB extension (fails gracefully if not available on Render Free Postgres)
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'timescaledb') THEN
+        CREATE EXTENSION IF NOT EXISTS timescaledb;
+    ELSE
+        RAISE NOTICE 'TimescaleDB not available. Using standard PostgreSQL tables.';
+    END IF;
+END
+$$;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
@@ -35,7 +43,13 @@ CREATE TABLE IF NOT EXISTS market_data (
     UNIQUE (symbol, timestamp)
 );
 
-SELECT create_hypertable('market_data', 'timestamp', if_not_exists => TRUE);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'timescaledb') THEN
+        PERFORM create_hypertable('market_data', 'timestamp', if_not_exists => TRUE);
+    END IF;
+END
+$$;
 
 -- Composite index: symbol + time DESC for fast range queries
 CREATE INDEX IF NOT EXISTS idx_market_symbol_time
@@ -46,53 +60,66 @@ CREATE INDEX IF NOT EXISTS idx_market_symbol_time
 -- Materializes 1-day candles from intraday data automatically.
 -- For daily-only data ingestion, this still works correctly.
 -- ============================================================
-CREATE MATERIALIZED VIEW IF NOT EXISTS candles_1d
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 day', timestamp)   AS bucket,
-    symbol,
-    first(open, timestamp)            AS open,
-    max(high)                         AS high,
-    min(low)                          AS low,
-    last(close, timestamp)            AS close,
-    sum(volume)                       AS volume,
-    last(adj_close, timestamp)        AS adj_close
-FROM market_data
-GROUP BY bucket, symbol
-WITH NO DATA;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'timescaledb') THEN
+        EXECUTE '
+        CREATE MATERIALIZED VIEW IF NOT EXISTS candles_1d
+        WITH (timescaledb.continuous) AS
+        SELECT
+            time_bucket(''1 day'', timestamp)   AS bucket,
+            symbol,
+            first(open, timestamp)            AS open,
+            max(high)                         AS high,
+            min(low)                          AS low,
+            last(close, timestamp)            AS close,
+            sum(volume)                       AS volume,
+            last(adj_close, timestamp)        AS adj_close
+        FROM market_data
+        GROUP BY bucket, symbol
+        WITH NO DATA;';
 
--- Refresh policy: keep daily candles up-to-date
-SELECT add_continuous_aggregate_policy('candles_1d',
-    start_offset    => INTERVAL '1 year',
-    end_offset      => INTERVAL '1 day',
-    schedule_interval => INTERVAL '1 day',
-    if_not_exists   => TRUE
-);
+        PERFORM add_continuous_aggregate_policy('candles_1d',
+            start_offset    => INTERVAL '1 year',
+            end_offset      => INTERVAL '1 day',
+            schedule_interval => INTERVAL '1 day',
+            if_not_exists   => TRUE
+        );
+    END IF;
+END
+$$;
 
 -- ============================================================
 -- CONTINUOUS AGGREGATE: Weekly candles (built on raw data)
 -- ============================================================
-CREATE MATERIALIZED VIEW IF NOT EXISTS candles_1w
-WITH (timescaledb.continuous) AS
-SELECT
-    time_bucket('1 week', timestamp)  AS bucket,
-    symbol,
-    first(open, timestamp)            AS open,
-    max(high)                         AS high,
-    min(low)                          AS low,
-    last(close, timestamp)            AS close,
-    sum(volume)                       AS volume,
-    last(adj_close, timestamp)        AS adj_close
-FROM market_data
-GROUP BY bucket, symbol
-WITH NO DATA;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'timescaledb') THEN
+        EXECUTE '
+        CREATE MATERIALIZED VIEW IF NOT EXISTS candles_1w
+        WITH (timescaledb.continuous) AS
+        SELECT
+            time_bucket(''1 week'', timestamp)  AS bucket,
+            symbol,
+            first(open, timestamp)            AS open,
+            max(high)                         AS high,
+            min(low)                          AS low,
+            last(close, timestamp)            AS close,
+            sum(volume)                       AS volume,
+            last(adj_close, timestamp)        AS adj_close
+        FROM market_data
+        GROUP BY bucket, symbol
+        WITH NO DATA;';
 
-SELECT add_continuous_aggregate_policy('candles_1w',
-    start_offset    => INTERVAL '2 years',
-    end_offset      => INTERVAL '1 week',
-    schedule_interval => INTERVAL '1 week',
-    if_not_exists   => TRUE
-);
+        PERFORM add_continuous_aggregate_policy('candles_1w',
+            start_offset    => INTERVAL '2 years',
+            end_offset      => INTERVAL '1 week',
+            schedule_interval => INTERVAL '1 week',
+            if_not_exists   => TRUE
+        );
+    END IF;
+END
+$$;
 
 -- ============================================================
 -- STRATEGIES
@@ -149,7 +176,13 @@ CREATE TABLE IF NOT EXISTS backtest_results (
     cumulative_return DOUBLE PRECISION DEFAULT 0.0
 );
 
-SELECT create_hypertable('backtest_results', 'timestamp', if_not_exists => TRUE);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'timescaledb') THEN
+        PERFORM create_hypertable('backtest_results', 'timestamp', if_not_exists => TRUE);
+    END IF;
+END
+$$;
 
 CREATE INDEX IF NOT EXISTS idx_results_backtest
     ON backtest_results (backtest_id, timestamp DESC);
@@ -203,10 +236,17 @@ CREATE TABLE IF NOT EXISTS backtest_analytics (
 -- COMPRESSION POLICY — compress old raw market data
 -- Saves 90%+ storage on historical tick data
 -- ============================================================
-ALTER TABLE market_data SET (
-    timescaledb.compress,
-    timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'timestamp DESC'
-);
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'timescaledb') THEN
+        EXECUTE '
+        ALTER TABLE market_data SET (
+            timescaledb.compress,
+            timescaledb.compress_segmentby = ''symbol'',
+            timescaledb.compress_orderby = ''timestamp DESC''
+        );';
 
-SELECT add_compression_policy('market_data', INTERVAL '30 days', if_not_exists => TRUE);
+        PERFORM add_compression_policy('market_data', INTERVAL '30 days', if_not_exists => TRUE);
+    END IF;
+END
+$$;

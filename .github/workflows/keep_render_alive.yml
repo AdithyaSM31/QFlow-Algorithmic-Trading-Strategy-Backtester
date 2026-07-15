@@ -1,0 +1,14 @@
+name: Keep Render Alive
+
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        # Replace <YOUR-RENDER-URL> with your actual backend URL after deployment
+        run: curl -s https://qflow-api.onrender.com/api/v1/health || exit 0
