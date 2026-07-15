@@ -39,8 +39,8 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div style={{ padding: '16px 12px', borderTop: '1px solid var(--border-glass)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', padding: '0 14px' }}>
+      <div className="user-profile" style={{ padding: '16px 12px', borderTop: '1px solid var(--border-glass)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0 0 12px 0', padding: '0 14px' }}>
           <div style={{
             width: 32, height: 32, borderRadius: '50%',
             background: 'var(--gradient-primary)',

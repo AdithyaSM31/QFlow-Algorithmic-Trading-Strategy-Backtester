@@ -134,7 +134,7 @@ export default function NewBacktest() {
           </div>
 
           {/* Capital & Costs */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+          <div className="grid-3">
             <div className="form-group">
               <label className="form-label">Initial Capital ($)</label>
               <input className="form-input" type="number" min={1000} step={1000} required

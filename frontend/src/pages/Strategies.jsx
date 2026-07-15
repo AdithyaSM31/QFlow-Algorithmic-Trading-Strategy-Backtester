@@ -139,7 +139,7 @@ export default function Strategies() {
           </div>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
+        <div className="strategy-grid">
           {strategies.map((s) => (
             <div key={s.id} className="glass-panel" style={{ cursor: 'pointer', padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

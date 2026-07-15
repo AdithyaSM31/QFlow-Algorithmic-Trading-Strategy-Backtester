@@ -138,7 +138,7 @@ export default function BacktestResults() {
       {/* Analytics Metrics */}
       {isComplete && analytics && (
         <>
-          <div className="metrics-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+          <div className="metrics-grid">
             <MetricCard label="Total Return" value={fmtPct(analytics.total_return)}
               positive={analytics.total_return > 0} icon={<TrendingUp size={16} />} />
             <MetricCard label="Sharpe Ratio" value={fmtNum(analytics.sharpe_ratio)}
@@ -152,7 +152,7 @@ export default function BacktestResults() {
           </div>
 
           {/* Secondary Metrics */}
-          <div className="metrics-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+          <div className="metrics-grid">
             <MetricCard label="Annualized" value={fmtPct(analytics.annualized_return)}
               positive={analytics.annualized_return > 0} small />
             <MetricCard label="Sortino" value={fmtNum(analytics.sortino_ratio)} small />
