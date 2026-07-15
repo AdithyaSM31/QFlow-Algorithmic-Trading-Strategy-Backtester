@@ -24,7 +24,7 @@ services:
         fromService:
           type: redis
           name: qflow-redis
-          envVarKey: REDIS_URL
+          property: connectionString
       # Render's internal postgres connection string is "postgres://..."
       # We need to ensure we use the correct driver for async.
       # The app config should dynamically replace postgres:// with postgresql+asyncpg:// 
@@ -44,8 +44,9 @@ services:
         fromService:
           type: redis
           name: qflow-redis
-          envVarKey: REDIS_URL
+          property: connectionString
 
   - type: redis
     name: qflow-redis
     plan: free
+    ipAllowList: []
