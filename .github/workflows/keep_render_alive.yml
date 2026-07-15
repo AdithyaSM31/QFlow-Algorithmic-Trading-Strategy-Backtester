@@ -10,5 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Render Backend
-        # Replace <YOUR-RENDER-URL> with your actual backend URL after deployment
-        run: curl -s https://qflow-api.onrender.com/health || exit 0
+        run: curl -s https://qflow-api-w980.onrender.com/health || exit 0
