@@ -131,7 +131,7 @@ export default function Strategies() {
           <Loader2 size={24} style={{ animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : strategies.length === 0 ? (
-        <div className="glass-panel">
+        <div className="glass-panel" style={{ padding: '60px 24px', textAlign: 'center' }}>
           <div className="empty-state">
             <TrendingUp size={48} />
             <h3>No strategies yet</h3>
