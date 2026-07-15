@@ -1,5 +1,8 @@
 # QFlow — Algorithmic Trading Strategy Backtester
 
+<p align="center">
+  <img src="frontend/assets/icon.jpg" width="150" alt="QFlow Logo">
+</p>
 > Production-grade backtesting platform where users define trading strategies (MA crossover, RSI, Bollinger Bands, custom ML signals), submit backtests as async jobs, and get institutional-grade PnL analytics.
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
@@ -52,6 +55,12 @@
 - **Built-in Strategies** — MA Crossover, RSI Mean Reversion, Bollinger Bands
 - **ML-Ready** — Walk-forward validated ML signal pipeline (Phase 5)
 - **Interactive Dashboard** — Recharts equity curves, drawdown charts, trade log
+
+## 📱 Mobile App (Native Android)
+QFlow is now fully transformed from a web-based engine into a premium, native-feeling mobile application using Ionic Capacitor (v1.0).
+- **Responsive UI/UX Overhaul**: Bottom navigation bar, intelligent grid stacking for complex strategy builders, and mobile-optimized auth flows.
+- **Native Experience**: Safe-area optimizations for edge-to-edge displays (camera notches, home indicators) and a bespoke Android launcher icon and splash screen.
+- **Production Architecture**: Connected seamlessly to the live Render-hosted FastAPI backend with secure CORS integration.
 
 ## Quick Start
 
