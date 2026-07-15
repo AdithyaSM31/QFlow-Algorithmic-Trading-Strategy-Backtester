@@ -37,6 +37,10 @@ export default function Sidebar() {
             {item.label}
           </button>
         ))}
+        <button className="nav-link mobile-only" onClick={logout} style={{ color: 'var(--red)' }}>
+          <LogOut size={18} />
+          Sign Out
+        </button>
       </nav>
 
       <div className="user-profile" style={{ padding: '16px 12px', borderTop: '1px solid var(--border-glass)' }}>

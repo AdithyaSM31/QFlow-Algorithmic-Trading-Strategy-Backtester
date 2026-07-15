@@ -302,6 +302,7 @@ tr:hover td { background: var(--bg-glass); }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 .w-full { width: 100%; }
+.mobile-only { display: none !important; }
 
 /* --- Auth Layout --- */
 .auth-container { display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1000px; width: 100%; }
@@ -357,6 +358,7 @@ tr:hover td { background: var(--bg-glass); }
   .nav-link svg { margin: 0 auto; width: 22px; height: 22px; }
   .nav-link.active { background: transparent; color: var(--neon-purple); border: none; box-shadow: none; }
   .nav-link:hover { background: transparent; }
+  .mobile-only { display: flex !important; }
 
   /* Stack Grids */
   .grid-2, .grid-3, .metrics-grid { grid-template-columns: 1fr; gap: 16px; }
