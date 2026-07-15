@@ -61,7 +61,7 @@ CREATE INDEX IF NOT EXISTS idx_strategies_user ON strategies (user_id);
 -- BACKTESTS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS backtests (
-    id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     strategy_id       UUID REFERENCES strategies(id) ON DELETE CASCADE,
     user_id           UUID REFERENCES users(id) ON DELETE CASCADE,
     status            TEXT DEFAULT 'PENDING',
