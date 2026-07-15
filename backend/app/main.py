@@ -2,7 +2,8 @@
 QFlow — FastAPI Application Factory
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
@@ -40,6 +41,20 @@ def create_app() -> FastAPI:
     @application.get("/api/v1/health", tags=["Health"])
     async def health_check():
         return {"status": "healthy", "app": settings.APP_NAME}
+
+    @application.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        origin = request.headers.get("origin")
+        headers = {}
+        if origin in ["http://localhost:3000", "http://localhost:5173", "https://q-flow-neon.vercel.app"]:
+            headers["Access-Control-Allow-Origin"] = origin
+            headers["Access-Control-Allow-Credentials"] = "true"
+        
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal Server Error", "msg": str(exc)},
+            headers=headers
+        )
 
     return application
 

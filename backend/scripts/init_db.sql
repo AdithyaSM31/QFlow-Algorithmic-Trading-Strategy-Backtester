@@ -14,13 +14,12 @@ BEGIN
     END IF;
 END
 $$;
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================================
 -- USERS
 -- ============================================================
 CREATE TABLE IF NOT EXISTS users (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email           TEXT UNIQUE NOT NULL,
     username        TEXT UNIQUE NOT NULL,
     hashed_password TEXT NOT NULL,
@@ -125,7 +124,7 @@ $$;
 -- STRATEGIES
 -- ============================================================
 CREATE TABLE IF NOT EXISTS strategies (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id         UUID REFERENCES users(id) ON DELETE CASCADE,
     name            TEXT NOT NULL,
     type            TEXT NOT NULL,
@@ -191,7 +190,7 @@ CREATE INDEX IF NOT EXISTS idx_results_backtest
 -- TRADES LOG
 -- ============================================================
 CREATE TABLE IF NOT EXISTS trades (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     backtest_id     UUID NOT NULL REFERENCES backtests(id) ON DELETE CASCADE,
     timestamp       TIMESTAMPTZ NOT NULL,
     symbol          TEXT NOT NULL,
