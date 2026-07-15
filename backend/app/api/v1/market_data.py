@@ -1,7 +1,7 @@
 """Market data routes — query OHLCV data and available symbols."""
 
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,34 +32,25 @@ async def get_market_data(
     symbol: str,
     start_date: datetime | None = Query(None),
     end_date: datetime | None = Query(None),
-    timeframe: str = Query("1d", regex="^(1d|1w)$"),
     limit: int = Query(1000, le=5000),
     db: AsyncSession = Depends(get_db),
 ):
-    """Query OHLCV data for a symbol. Supports daily and weekly timeframes."""
-    # Choose source: continuous aggregate or raw table
-    if timeframe == "1w":
-        table = "candles_1w"
-        ts_col = "bucket"
-    else:
-        table = "market_data"
-        ts_col = "timestamp"
-
-    query = f"""
-        SELECT {ts_col} AS timestamp, symbol, open, high, low, close, volume, adj_close
-        FROM {table}
+    """Query OHLCV data for a symbol."""
+    query = """
+        SELECT timestamp, symbol, open, high, low, close, volume, adj_close
+        FROM market_data
         WHERE symbol = :symbol
     """
     params = {"symbol": symbol.upper()}
 
     if start_date:
-        query += f" AND {ts_col} >= :start"
+        query += " AND timestamp >= :start"
         params["start"] = start_date
     if end_date:
-        query += f" AND {ts_col} <= :end"
+        query += " AND timestamp <= :end"
         params["end"] = end_date
 
-    query += f" ORDER BY {ts_col} ASC LIMIT :limit"
+    query += " ORDER BY timestamp ASC LIMIT :limit"
     params["limit"] = limit
 
     result = await db.execute(text(query), params)
@@ -69,3 +60,28 @@ async def get_market_data(
         raise HTTPException(status_code=404, detail=f"No data found for {symbol}")
 
     return [OHLCVBar(**row) for row in rows]
+
+
+@router.post("/ingest", status_code=202)
+async def trigger_ingestion(
+    background_tasks: BackgroundTasks,
+):
+    """Trigger background market data ingestion."""
+    def run_ingest():
+        import os
+        from sqlalchemy import create_engine
+        import sys
+        sys.path.append(os.path.join(os.path.dirname(__file__), "../../../"))
+        from scripts.ingest_data import ingest_symbol, DEFAULT_SYMBOLS
+        from app.config import get_settings
+        
+        settings = get_settings()
+        engine = create_engine(settings.DATABASE_URL_SYNC)
+        for sym in DEFAULT_SYMBOLS:
+            try:
+                ingest_symbol(engine, sym, "5y")
+            except Exception as e:
+                print(f"Failed to ingest {sym}: {e}")
+
+    background_tasks.add_task(run_ingest)
+    return {"status": "Ingestion started in background"}
