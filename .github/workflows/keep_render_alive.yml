@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Ping Render Backend
         # Replace <YOUR-RENDER-URL> with your actual backend URL after deployment
-        run: curl -s https://qflow-api.onrender.com/api/v1/health || exit 0
+        run: curl -s https://qflow-api.onrender.com/health || exit 0

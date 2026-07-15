@@ -11,7 +11,7 @@ services:
     dockerfilePath: backend/Dockerfile
     dockerContext: backend
     plan: free
-    healthCheckPath: /api/v1/health
+    healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -26,9 +26,16 @@ services:
           type: redis
           name: qflow-redis
           property: connectionString
-      # Render's internal postgres connection string is "postgres://..."
-      # We need to ensure we use the correct driver for async.
-      # The app config should dynamically replace postgres:// with postgresql+asyncpg:// 
+      - key: CELERY_BROKER_URL
+        fromService:
+          type: redis
+          name: qflow-redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          type: redis
+          name: qflow-redis
+          property: connectionString
 
 
   - type: redis
